@@ -132,7 +132,7 @@ The alternative would be just to disable the feature - it is only needed in the
 
 */
 uint8_t RF69::control(uint8_t cmd, uint8_t val) {
-    PreventInterrupt irq0;
+    cli();  
     return spiTransfer(cmd, val);
 }
 

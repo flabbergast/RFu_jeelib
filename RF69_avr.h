@@ -73,7 +73,8 @@ static void spiConfigPins () {
 //    PORTA |= _BV(SPI_MOSI) | _BV(SPI_SCK); // PA4-5 TriState interim Pull up    
     DDRA |= _BV(SPI_MOSI) | _BV(SPI_SCK);  // Output PA5 - MOSI | PA4 - SCK
 
-    DDRB &= ~ _BV(RFM_IRQ);               // PB2 Input
+//    DDRB &= ~ _BV(RFM_IRQ);               // PB2 Input
+//    PORTB |=  _BV(RFM_IRQ);               // With pullup!
         
 }
 
@@ -119,14 +120,13 @@ static void spiConfigPins () {
 
 #ifndef EIMSK
 #define EIMSK GIMSK // ATtiny
-#define INT0 6
 #endif
 
-struct PreventInterrupt {
-    PreventInterrupt () { GIMSK &= ~ _BV(6); }
-    ~PreventInterrupt () { GIMSK |= _BV(6); }
+/*struct PreventInterrupt {
+    PreventInterrupt () { EIMSK &= ~ _BV(INT0); }
+    ~PreventInterrupt () { EIMSK |= _BV(INT0); }
 };
-
+*/
 static void spiInit (void) {
     spiConfigPins();
     
@@ -135,7 +135,6 @@ static void spiInit (void) {
     SPSR |= _BV(SPI2X);
 #else
     USICR = _BV(USIWM0); // ATtiny
-    MCUCR |= 0x03;       // Rising interrupt    
 #endif    
     
     // pinMode(RFM_IRQ, INPUT);

@@ -35,13 +35,25 @@ uint8_t rf69_initialize (uint8_t id, uint8_t band, uint8_t group, uint16_t off) 
     RF69::setFrequency(freq * 10000000L + band * 2500L * off);
     RF69::group = group;
     RF69::node = id & RF12_HDR_MASK;
-    delay(20); // needed to make RFM69 work properly on power-up
-    if (RF69::node != 0)
-        attachInterrupt(0, RF69::interrupt_compat, RISING);
-    else
-        detachInterrupt(0);
+    delay(20); // needed to make RFM69 work properly on power-up  
+        
+    if (RF69::node != 0) {
+//        attachInterrupt(0, RF69::interrupt_compat, RISING); 
+        MCUCR |= ( 1 << ISC00 ); 
+        MCUCR |= ( 1 << ISC01 );
+        GIMSK |= _BV(INT0); 
+        sei();
+    } else {
+//        detachInterrupt(0); 
+        cli();
+        GIMSK &= ~ _BV(INT0);
+    }
     RF69::configure_compat();
     return nodeid = id;
+}
+    
+ISR (INT0_vector) {
+        RF69::interrupt_compat;
 }
 
 // same code as rf12_config(Silent), just calling rf69_initialize() instead
