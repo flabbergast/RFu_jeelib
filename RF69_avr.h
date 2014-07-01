@@ -122,11 +122,11 @@ static void spiConfigPins () {
 #define EIMSK GIMSK // ATtiny
 #endif
 
-/*struct PreventInterrupt {
+struct PreventInterrupt {
     PreventInterrupt () { EIMSK &= ~ _BV(INT0); }
     ~PreventInterrupt () { EIMSK |= _BV(INT0); }
 };
-*/
+
 static void spiInit (void) {
     spiConfigPins();
     
@@ -151,7 +151,8 @@ static uint8_t spiTransferByte (uint8_t out) {
     USIDR = out; // ATtiny
     uint8_t v1 = _BV(USIWM0) | _BV(USITC);
     uint8_t v2 = _BV(USIWM0) | _BV(USITC) | _BV(USICLK);
-    for (uint8_t i = 0; i < 8; ++i) {
+//    for (uint8_t i = 0; i < 8; ++i) {
+    for (uint8_t i = 0; i < 8; i++) {
         USICR = v1;
         USICR = v2;
     }
