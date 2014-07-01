@@ -11,7 +11,7 @@
 // RF69n driver is around 636 bytes larger than RF12B when compiled for Uno
 // RF69n driver is around 650 bytes large than RF12B when compiled for Tiny
 
-#define RF69_COMPAT  1   // define this to use the RF69 driver i.s.o. RF12 - Adds 650 bytes to Tiny image
+#define RF69_COMPAT  1   // define this to use the RF69 driver i.s.o. RF12 - Adds 324 bytes to Tiny image
 #define OOK          0   // Define this to include OOK code f, k - Adds 520 bytes to Tiny image
 #define JNuMOSFET    0   // Define to power up RFM12B on JNu2/3 - Adds 4 bytes to Tiny image
 #define configSTRING 0   // Define to include "A i1 g210 @ 868 MHz q1" - Adds 442 bytes to Tiny image
@@ -925,6 +925,13 @@ memset(pktCount,0,sizeof(pktCount));
     rf12_configDump();
     stickyGroup = config.group;
 
+    Serial.println();
+    for (byte r = 1; r <= 254; ++r) {
+        showByte(r); // Check for terminal sensitivity
+        printOneChar(',');
+        delay(10);
+    }
+    Serial.println();
     Serial.println();
     for (byte r = 1; r < 0x40; ++r) {
         showByte(RF69::control(r, 0)); // Prints out Radio Hardware Version Register.

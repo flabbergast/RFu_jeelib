@@ -67,7 +67,7 @@ static void spiConfigPins () {
     PORTB |= _BV(SPI_SS);                  // PB1 SPI_SS High
     
     DDRA &= ~ _BV(SPI_MISO);               // PA6 Input
-    PORTA |= _BV(SPI_MISO);                // PA6 Input Pull up
+//    PORTA |= _BV(SPI_MISO);                // PA6 Input Pull up
 
 // TODO Why does the following line of code screw things up?
 //    PORTA |= _BV(SPI_MOSI) | _BV(SPI_SCK); // PA4-5 TriState interim Pull up    
