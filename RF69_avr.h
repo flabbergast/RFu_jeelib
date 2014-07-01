@@ -151,11 +151,23 @@ static uint8_t spiTransferByte (uint8_t out) {
     USIDR = out; // ATtiny
     uint8_t v1 = _BV(USIWM0) | _BV(USITC);
     uint8_t v2 = _BV(USIWM0) | _BV(USITC) | _BV(USICLK);
-//    for (uint8_t i = 0; i < 8; ++i) {
-    for (uint8_t i = 0; i < 8; i++) {
+
+#if F_CPU <= 10000000
+    // only unroll if resulting clock stays under 8 MHz
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+    USICR = v1; USICR = v2;
+#else
+    for (uint8_t i = 0; i < 8; ++i) {
         USICR = v1;
         USICR = v2;
     }
+#endif 
     return USIDR;
 #endif
 }

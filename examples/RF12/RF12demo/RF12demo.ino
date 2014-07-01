@@ -924,11 +924,22 @@ memset(pktCount,0,sizeof(pktCount));
 
     rf12_configDump();
     stickyGroup = config.group;
-    for (byte r = 1; r++; r < 0x40) {
+
+    Serial.println();
+    for (byte r = 1; r < 0x40; ++r) {
         showByte(RF69::control(r, 0)); // Prints out Radio Hardware Version Register.
         printOneChar(',');
+        delay(10);
     }
-    Serial.println(INT0);
+    Serial.println();
+    Serial.println();
+    for (byte r = 1; r < 0x40; ++r) {
+        showByte(RF69::control(r, 0)); // Prints out Radio Hardware Version Register.
+        printOneChar(',');
+        delay(10);
+    }
+    Serial.println();
+
     df_initialize();
 #if !TINY
     showHelp();
