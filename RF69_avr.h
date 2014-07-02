@@ -67,13 +67,13 @@ static void spiConfigPins () {
     PORTB |= _BV(SPI_SS);                  // PB1 SPI_SS High
     
     DDRA &= ~ _BV(SPI_MISO);               // PA6 Input
-//    PORTA |= _BV(SPI_MISO);                // PA6 Input Pull up
+    PORTA |= _BV(SPI_MISO);                // PA6 Input Pull up
 
 // TODO Why does the following line of code screw things up?
 //    PORTA |= _BV(SPI_MOSI) | _BV(SPI_SCK); // PA4-5 TriState interim Pull up    
     DDRA |= _BV(SPI_MOSI) | _BV(SPI_SCK);  // Output PA5 - MOSI | PA4 - SCK
 
-//    DDRB &= ~ _BV(RFM_IRQ);               // PB2 Input
+    DDRB &= ~ _BV(RFM_IRQ);               // PB2 Input
 //    PORTB |=  _BV(RFM_IRQ);               // With pullup!
         
 }
@@ -152,7 +152,7 @@ static uint8_t spiTransferByte (uint8_t out) {
     uint8_t v1 = _BV(USIWM0) | _BV(USITC);
     uint8_t v2 = _BV(USIWM0) | _BV(USITC) | _BV(USICLK);
 
-#if F_CPU <= 10000000
+#if F_CPU <= 5000000
     // only unroll if resulting clock stays under 8 MHz
     USICR = v1; USICR = v2;
     USICR = v1; USICR = v2;
