@@ -215,7 +215,7 @@ void RF69::configure_compat () {
     writeReg(REG_IRQFLAGS2, IRQ2_FIFOOVERRUN);  // Clear FIFO
     writeReg(REG_AFCFEI, AfcClear);             // Clear AFC
     writeReg(REG_DIOMAPPING1, 0x80);            // Interrupt on RSSI
-
+    
     rxstate = TXIDLE;
 }
 

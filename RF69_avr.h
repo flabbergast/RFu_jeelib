@@ -67,14 +67,10 @@ static void spiConfigPins () {
     PORTB |= _BV(SPI_SS);                  // PB1 SPI_SS High
     
     DDRA &= ~ _BV(SPI_MISO);               // PA6 Input
-    PORTA |= _BV(SPI_MISO);                // PA6 Input Pull up
 
 // TODO Why does the following line of code screw things up?
 //    PORTA |= _BV(SPI_MOSI) | _BV(SPI_SCK); // PA4-5 TriState interim Pull up    
     DDRA |= _BV(SPI_MOSI) | _BV(SPI_SCK);  // Output PA5 - MOSI | PA4 - SCK
-
-    DDRB &= ~ _BV(RFM_IRQ);               // PB2 Input
-//    PORTB |=  _BV(RFM_IRQ);               // With pullup!
         
 }
 
@@ -136,6 +132,7 @@ static void spiInit (void) {
 #else
     USICR = _BV(USIWM0); // ATtiny
 #endif    
+    DDRB &= ~ _BV(RFM_IRQ);               // PB2 Input
     
     // pinMode(RFM_IRQ, INPUT);
     // digitalWrite(RFM_IRQ, 1); // pull-up

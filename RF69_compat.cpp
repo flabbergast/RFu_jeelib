@@ -24,6 +24,9 @@ static long ezNextSend[2];          // when was last retry [0] or data [1] sent
 
 // void rf69_spiInit () {
 // }
+ISR (INT0_vector) {
+        RF69::interrupt_compat;
+}
 
 uint8_t rf69_initialize (uint8_t id, uint8_t band, uint8_t group, uint16_t off) {
     uint8_t freq = 0;
@@ -39,21 +42,14 @@ uint8_t rf69_initialize (uint8_t id, uint8_t band, uint8_t group, uint16_t off) 
         
     if (RF69::node != 0) {
 //        attachInterrupt(0, RF69::interrupt_compat, RISING); 
-        MCUCR |= ( 1 << ISC00 ); 
-        MCUCR |= ( 1 << ISC01 );
+        MCUCR |= 0x03; 
         GIMSK |= _BV(INT0); 
-        sei();
     } else {
 //        detachInterrupt(0); 
-        cli();
         GIMSK &= ~ _BV(INT0);
     }
     RF69::configure_compat();
     return nodeid = id;
-}
-    
-ISR (INT0_vector) {
-        RF69::interrupt_compat;
 }
 
 // same code as rf12_config(Silent), just calling rf69_initialize() instead
