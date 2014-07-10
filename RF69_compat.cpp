@@ -24,9 +24,6 @@ static long ezNextSend[2];          // when was last retry [0] or data [1] sent
 
 // void rf69_spiInit () {
 // }
-ISR (INT0_vector) {
-        RF69::interrupt_compat;
-}
 
 uint8_t rf69_initialize (uint8_t id, uint8_t band, uint8_t group, uint16_t off) {
     uint8_t freq = 0;
