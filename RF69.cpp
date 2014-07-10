@@ -84,6 +84,12 @@ static volatile uint8_t packetBytes; // Count of bytes in packet
 static volatile uint16_t discards;   // Count of packets discarded
 
 static ROM_UINT8 configRegs_compat [] ROM_DATA = {
+  0x2E, 0xA0, // SyncConfig = sync on, sync size = 5
+  0x2F, 0xAA, // SyncValue1 = 0xAA
+  0x30, 0xAA, // SyncValue2 = 0xAA
+  0x31, 0xAA, // SyncValue3 = 0xAA
+  0x32, 0x2D, // SyncValue4 = 0x2D
+  0x33, 0xD4, // SyncValue5 = 212, Group
  // 0x01, 0x04, // OpMode = standby
  // 0x02, 0x00, // DataModul = packet mode, fsk
   0x03, 0x02, // BitRateMsb, data rate = 49,261 khz

@@ -43,7 +43,8 @@ uint8_t rf69_initialize (uint8_t id, uint8_t band, uint8_t group, uint16_t off) 
     if (RF69::node != 0) {
 //        attachInterrupt(0, RF69::interrupt_compat, RISING); 
         MCUCR |= 0x03; 
-        GIMSK |= _BV(INT0); 
+        GIMSK |= _BV(INT0);
+//        sei(); 
     } else {
 //        detachInterrupt(0); 
         GIMSK &= ~ _BV(INT0);
