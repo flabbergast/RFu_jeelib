@@ -29,6 +29,7 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include <util/parity.h>
+#include <avr/interrupt.h>
 
 #define MAJOR_VERSION RF12_EEPROM_VERSION // bump when EEPROM layout changes
 #define MINOR_VERSION 3                   // bump on other non-trivial changes
@@ -81,6 +82,13 @@ static byte stickyGroup;
 #define _receivePin 8
 static char _receive_buffer;
 static byte _receive_buffer_index;
+
+volatile uint8_t countINT0;
+ISR (EXT_INT0_vect) {
+    countINT0++;
+        RF69::interrupt_compat;
+}
+
 
 ISR (PCINT0_vect) {
     char i, d = 0;
@@ -675,6 +683,7 @@ static void handleInput (char c) {
             break;
 #endif
 
+#if MESSAGING
         case 'p':
             // Post a semaphore for a remote node, to be collected along with
             // the next ACK. Format is 20,212,127p where 20 is the node and 212 
@@ -686,7 +695,6 @@ static void handleInput (char c) {
             
             if (top == 0) {
                 nodeShow();
-#if MESSAGING
             } else if (stack[0] < MAX_NODES) {
                   printOneChar('i');
                   Serial.print(stack[0]);
@@ -702,9 +710,9 @@ static void handleInput (char c) {
                       stickyGroup = stack[1];
                   }
                   Serial.println();
-#endif
             }
             break;
+#endif
 
         case 'n': 
           if ((top == 0) && (config.group == 0)) {
@@ -945,7 +953,9 @@ static void dumpRegs() {
         delay(2);
     }
     Serial.println();
-    showString(PSTR("SREG="));
+    showString(PSTR("INT0="));
+    showByte(countINT0);
+    showString(PSTR(" SREG="));
     showByte(SREG);
     showString(PSTR(" GIMSK="));
     showByte(GIMSK);
