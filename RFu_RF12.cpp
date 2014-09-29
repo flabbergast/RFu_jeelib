@@ -8,7 +8,7 @@
 #include <avr/eeprom.h>
 #include <avr/sleep.h>
 #if ARDUINO >= 100
-#include <Arduino.h> // Arduino 1.0
+#include <Arduino.h>  // Arduino 1.0
 #else
 #include <WProgram.h> // Arduino 0022
 #endif
@@ -17,7 +17,8 @@
 // To use this driver with Ciseco RFµ-328 and and RFM12B uncomment the following line
 #define CISECO_RFU
 
-// #define OPTIMIZE_SPI 1  // uncomment this to write to the RFM12B @ 8 Mhz
+#define OPTIMIZE_SPI 1  // uncomment this to write to the RFM12B @ 8 Mhz
+//namespace RF12 { extern int16_t  intCount; }
 
 // pin change interrupts are currently only supported on ATmega328's
 // #define PINCHG_IRQ 1    // uncomment this to use pin-change interrupts
@@ -687,7 +688,7 @@ uint8_t rf12_configSilent () {
         byte e = eeprom_read_byte(RF12_EEPROM_ADDR + i);
         crc = _crc16_update(crc, e);
     }
-    if (crc || eeprom_read_byte(RF12_EEPROM_ADDR + 2) != RF12_EEPROM_VERSION)
+    if (crc || !(eeprom_read_byte(RF12_EEPROM_ADDR + 2) == RF12_EEPROM_VERSION))
         return 0;
         
     uint8_t nodeId = 0, group = 0;   
@@ -695,8 +696,9 @@ uint8_t rf12_configSilent () {
      
     nodeId = eeprom_read_byte(RF12_EEPROM_ADDR + 0);
     group  = eeprom_read_byte(RF12_EEPROM_ADDR + 1);
-    frequency = eeprom_read_word((uint16_t*) (RF12_EEPROM_ADDR + 4));
-    
+    frequency = eeprom_read_byte(RF12_EEPROM_ADDR + 5);
+    frequency = (frequency << 8) + (eeprom_read_byte(RF12_EEPROM_ADDR + 4));
+
     rf12_initialize(nodeId, nodeId >> 6, group, frequency);
     return nodeId & RF12_HDR_MASK;
 }
@@ -707,36 +709,45 @@ uint8_t rf12_configSilent () {
 void rf12_configDump () {
     uint8_t nodeId = eeprom_read_byte(RF12_EEPROM_ADDR);
     uint8_t flags = eeprom_read_byte(RF12_EEPROM_ADDR + 3);
-    uint16_t freq = eeprom_read_word((uint16_t*) (RF12_EEPROM_ADDR + 4));
+    frequency = eeprom_read_byte(RF12_EEPROM_ADDR + 5);
+    frequency = (frequency << 8) + (eeprom_read_byte(RF12_EEPROM_ADDR + 4));
     
     // " A i1 g178 @ 868 MHz "
     Serial.print(' ');
     Serial.print((char) ('@' + (nodeId & RF12_HDR_MASK)));
     Serial.print(" i");
-    Serial.print(nodeId & RF12_HDR_MASK);
+    Serial.print((word)nodeId & RF12_HDR_MASK);
     if (flags & 0x04)
         Serial.print('*');
     Serial.print(" g");
-    Serial.print(eeprom_read_byte(RF12_EEPROM_ADDR + 1));
+    Serial.print((word)eeprom_read_byte(RF12_EEPROM_ADDR + 1));
     Serial.print(" @ ");
     uint8_t band = nodeId >> 6;
-    Serial.print(band == RF12_433MHZ ? 433 :
+    Serial.print((word)band == RF12_433MHZ ? 434 :
                  band == RF12_868MHZ ? 868 :
-                 band == RF12_915MHZ ? 915 : 0);
+                 band == RF12_915MHZ ? 912 : 0);
     Serial.print(" MHz");
-    if (flags & 0x04) {
-        Serial.print(" c1");
-    }
-    if (freq != 1600) {
+    if (frequency != 1600) {
         Serial.print(" o");
-        Serial.print(freq);
+        Serial.print(frequency);
     }
     if (flags & 0x08) {
         Serial.print(" q1");
     }
+    if (flags & 0x04) {
+        Serial.print(" c1");
+    }
     if (flags & 0x03) {
         Serial.print(" x");
         Serial.print(flags & 0x03);
+    }
+    // Bad reuse of flags variable
+    flags = eeprom_read_byte(RF12_EEPROM_ADDR + 6);
+    if (flags) {
+        if (flags != 0x9F) {
+            Serial.print(" r");
+            Serial.print(flags, HEX);
+       }
     }
     Serial.println();
 }

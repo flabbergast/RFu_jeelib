@@ -6,6 +6,19 @@ namespace RF69 {
     extern uint8_t  group;
     extern uint8_t  node;
     extern uint8_t  rssi;
+    extern int16_t  afc;
+    extern int16_t  fei;
+    extern uint8_t  lna;
+    extern uint16_t interruptCount;
+    extern uint16_t rxP;
+    extern uint16_t txP;
+    extern uint16_t discards;
+    extern uint16_t overrun;
+    extern uint16_t fifooverrun; 
+    extern uint16_t byteCount;
+    extern uint16_t underrun;
+    extern uint8_t  present;
+
 
     void setFrequency (uint32_t freq);
     bool canSend ();

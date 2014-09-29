@@ -13,7 +13,7 @@
 #define ROM_DATA        PROGMEM
 
 #define IRQ_ENABLE      sei()
-
+#define IRQ_NUMBER      INT0
 #if defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__)
 
 #define RFM_IRQ     2
@@ -52,6 +52,29 @@ static void spiConfigPins () {
     DDRB |= _BV(SPI_SS) | _BV(SPI_MOSI) | _BV(SPI_SCK);
 }
 
+
+#elif defined(__AVR_ATmega1284P__) // Moteino MEGA
+// http://lowpowerlab.com/moteino/#whatisitMEGA
+
+#define RFM_IRQ     2
+#undef  IRQ_NUMBER 
+#define IRQ_NUMBER  INT2
+#define SS_DDR      DDRB
+#define SS_PORT     PORTB
+#define SS_BIT      4
+
+#define SPI_SS      4
+#define SPI_MOSI    5
+#define SPI_MISO    6
+#define SPI_SCK     7
+
+static void spiConfigPins () {
+    SS_PORT |= _BV(SS_BIT);
+    SS_DDR |= _BV(SS_BIT);
+    PORTB |= _BV(SPI_SS);
+    DDRB |= _BV(SPI_SS) | _BV(SPI_MOSI) | _BV(SPI_SCK);
+}
+
 #elif defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny44__)
 
 #define RFM_IRQ     2
@@ -59,18 +82,26 @@ static void spiConfigPins () {
 #define SS_PORT     PORTB
 #define SS_BIT      1
 
-#define SPI_SS      1     // PB1, pin 3
-#define SPI_MISO    4     // PA6, pin 7
-#define SPI_MOSI    5     // PA5, pin 8
-#define SPI_SCK     6     // PA4, pin 9
+#define SPI_SS      1     // PB1, pin 3 Output
+#define SPI_MISO    6     // PA6, pin 7 Input
+#define SPI_MOSI    5     // PA5, pin 8 Output
+#define SPI_SCK     4     // PA4, pin 9 Output
 
 static void spiConfigPins () {
-    SS_PORT |= _BV(SS_BIT);
-    SS_DDR |= _BV(SS_BIT);
-    PORTB |= _BV(SPI_SS);
-    DDRB |= _BV(SPI_SS);
-    PORTA |= _BV(SPI_SS);
-    DDRA |= _BV(SPI_MOSI) | _BV(SPI_SCK);
+    SS_PORT |= _BV(SS_BIT);                 // PB1 TriState interim Pull up
+    SS_DDR |= _BV(SS_BIT);                  // PB1 SS_BIT Output
+    PORTB |= _BV(SPI_SS);                   // PB1 SPI_SS High    
+    DDRA &= ~ _BV(SPI_MISO);                // PA6 Input
+    DDRA |= _BV(SPI_MOSI) | _BV(SPI_SCK);   // Output PA5 - MOSI | PA4 - SCK
+    DDRB &= ~ _BV(RFM_IRQ);                 // PB2 Input
+        
+}
+
+static void setPrescaler (uint8_t mode) {
+    cli();
+    CLKPR = 128;      // Set CLKPCE to 1 and rest to 0;
+    CLKPR = mode;
+    sei();
 }
 
 #elif defined(__AVR_ATmega32U4__) //Arduino Leonardo 
@@ -144,8 +175,8 @@ struct PreventInterrupt {
 };
 #else
 struct PreventInterrupt {
-    PreventInterrupt () { EIMSK &= ~ _BV(INT0); }
-    ~PreventInterrupt () { EIMSK |= _BV(INT0); }
+    PreventInterrupt () { EIMSK &= ~ _BV(IRQ_NUMBER); }
+    ~PreventInterrupt () { EIMSK |= _BV(IRQ_NUMBER); }
 };
 #endif
 
@@ -153,7 +184,10 @@ static void spiInit (void) {
     spiConfigPins();
     
 #ifdef SPCR    
-    SPCR = _BV(SPE) | _BV(MSTR);
+    SPCR = _BV(SPE) | _BV(MSTR);    
+    
+//    SPCR |= _BV(SPR0);  // Divide SPI by 4
+    
     SPSR |= _BV(SPI2X);
 #else
     USICR = _BV(USIWM0); // ATtiny
@@ -172,6 +206,7 @@ static uint8_t spiTransferByte (uint8_t out) {
         ;
     return SPDR;
 #else
+setPrescaler(2);  // div 4, i.e. 2 MHz
     USIDR = out; // ATtiny
     uint8_t v1 = _BV(USIWM0) | _BV(USITC);
     uint8_t v2 = _BV(USIWM0) | _BV(USITC) | _BV(USICLK);
@@ -179,6 +214,8 @@ static uint8_t spiTransferByte (uint8_t out) {
         USICR = v1;
         USICR = v2;
     }
+    
+setPrescaler(0);  // div 1, i.e. 8 MHz
     return USIDR;
 #endif
 }
