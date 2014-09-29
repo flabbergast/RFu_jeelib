@@ -141,10 +141,12 @@ static unsigned long now () {
     return millis() / 1000;
 }
 
+#define INVERTED_LED    !    // for RFM12Pi / delete the '!' to revert back to original RF12Demo behaviour
+
 static void activityLed (byte on) {
 #ifdef LED_PIN
     pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, !on);
+    digitalWrite(LED_PIN, INVERTED_LED on);
 #endif
 }
 
