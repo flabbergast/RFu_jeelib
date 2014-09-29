@@ -1,6 +1,9 @@
 #include <avr/interrupt.h>
 #include <util/crc16.h>
 
+// To use this driver with Ciseco RFµ-328 and RFM69CW uncomment the following line
+#define CISECO_RFU
+
 // prog_uint8_t appears to be deprecated in avr libc, this resolves it for now
 #define __PROG_TYPES_COMPAT__
 #include <avr/pgmspace.h>
@@ -89,6 +92,26 @@ static void spiConfigPins () {
     DDRB |= _BV(SPI_SS) | _BV(SPI_MOSI) | _BV(SPI_SCK);
 }
 
+#elif defined(CISECO_RFU) // Ciseco's RFu-328, v1.2 - v1.3
+
+#define RFM_IRQ   3   // PD3, Digital3, INT1
+#define SS_DDR      DDRD
+#define SS_PORT     PORTD
+#define SS_BIT      4	  // PD4, Dig4
+
+#define SPI_SS      2     // PB0
+#define SPI_MOSI    3     // PB1
+#define SPI_MISO    4     // PB2
+#define SPI_SCK     5     // PB3
+
+static void spiConfigPins () {
+    SS_PORT |= _BV(SS_BIT);
+    SS_DDR |= _BV(SS_BIT);
+    PORTB |= _BV(SPI_SS);
+    DDRB |= _BV(SPI_SS) | _BV(SPI_MOSI) | _BV(SPI_SCK);
+} // set up also SPI_SS as output (so that MSTR (master) bit is not cleared
+  // accidentally by setting SPI_SS as input and driving it low)
+
 #else // ATmega168, ATmega328, etc.
 
 // #define RFM_IRQ     2
@@ -114,10 +137,17 @@ static void spiConfigPins () {
 #define EIMSK GIMSK // ATtiny
 #endif
 
+#if defined(CISECO_RFU) // RFu has IRQ connected to INT1
+struct PreventInterrupt {
+    PreventInterrupt () { EIMSK &= ~ _BV(INT1); }
+    ~PreventInterrupt () { EIMSK |= _BV(INT1); }
+};
+#else
 struct PreventInterrupt {
     PreventInterrupt () { EIMSK &= ~ _BV(INT0); }
     ~PreventInterrupt () { EIMSK |= _BV(INT0); }
 };
+#endif
 
 static void spiInit (void) {
     spiConfigPins();
@@ -129,8 +159,10 @@ static void spiInit (void) {
     USICR = _BV(USIWM0); // ATtiny
 #endif    
     
-    // pinMode(RFM_IRQ, INPUT);
-    // digitalWrite(RFM_IRQ, 1); // pull-up
+//#if defined(CISECO_RFU)
+//    pinMode(RFM_IRQ, INPUT);
+//    digitalWrite(RFM_IRQ, 1); // pull-up
+//#endif
 }
 
 static uint8_t spiTransferByte (uint8_t out) {

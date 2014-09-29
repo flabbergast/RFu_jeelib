@@ -1,7 +1,10 @@
-#include <JeeLib.h>
+#include <RFu_JeeLib.h>
 #include <avr/eeprom.h>
 #include <avr/sleep.h>
 #include <util/crc16.h>
+
+// To use this driver with Ciseco RFµ-328 and RFM69CW uncomment the following line
+#define CISECO_RFU
 
 volatile uint16_t rf69_crc;
 volatile uint8_t rf69_buf[72];
@@ -37,9 +40,15 @@ uint8_t rf69_initialize (uint8_t id, uint8_t band, uint8_t group, uint16_t off) 
     RF69::node = id & RF12_HDR_MASK;
     delay(20); // needed to make RFM69 work properly on power-up
     if (RF69::node != 0)
+#if defined(CISECO_RFU)
+        attachInterrupt(1, RF69::interrupt_compat, RISING);
+    else
+        detachInterrupt(1);
+#else
         attachInterrupt(0, RF69::interrupt_compat, RISING);
     else
         detachInterrupt(0);
+#endif
     RF69::configure_compat();
     return nodeid = id;
 }

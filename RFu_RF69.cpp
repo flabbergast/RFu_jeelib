@@ -1,6 +1,6 @@
 #include <stdint.h>
-#include <RF69.h>
-#include <RF69_avr.h>
+#include <RFu_RF69.h>
+#include <RFu_RF69_avr.h>
 
 #define REG_FIFO            0x00
 #define REG_OPMODE          0x01
@@ -140,8 +140,8 @@ void RF69::sleep (bool off) {
 }
 
 // References to the RF12 driver above this line will generate compiler errors!
-#include <RF69_compat.h>
-#include <RF12.h>
+#include <RFu_RF69_compat.h>
+#include <RFu_RF12.h>
 
 void RF69::configure_compat () {
     initRadio(configRegs_compat);    
