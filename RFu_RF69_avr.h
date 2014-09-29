@@ -126,6 +126,8 @@ static void spiConfigPins () {
 #elif defined(CISECO_RFU) // Ciseco's RFu-328, v1.2 - v1.3
 
 #define RFM_IRQ   3   // PD3, Digital3, INT1
+#undef  IRQ_NUMBER 
+#define IRQ_NUMBER  INT1
 #define SS_DDR      DDRD
 #define SS_PORT     PORTD
 #define SS_BIT      4	  // PD4, Dig4
@@ -168,17 +170,10 @@ static void spiConfigPins () {
 #define EIMSK GIMSK // ATtiny
 #endif
 
-#if defined(CISECO_RFU) // RFu has IRQ connected to INT1
-struct PreventInterrupt {
-    PreventInterrupt () { EIMSK &= ~ _BV(INT1); }
-    ~PreventInterrupt () { EIMSK |= _BV(INT1); }
-};
-#else
 struct PreventInterrupt {
     PreventInterrupt () { EIMSK &= ~ _BV(IRQ_NUMBER); }
     ~PreventInterrupt () { EIMSK |= _BV(IRQ_NUMBER); }
 };
-#endif
 
 static void spiInit (void) {
     spiConfigPins();
