@@ -59,7 +59,7 @@ Thanks to Matt Lloyd for this software fix.
 "RF12" wireless driver library, timers, low-power code, and several interface  
 classes. With examples for many sensor & interface boards made by [JeeLabs]
 
-----
+The home page for this library is at <http://jeelabs.net/projects/jeelib/wiki>.
 
 Download the zip 
 
@@ -68,9 +68,6 @@ Download the zip
 * Restart the Arduino IDE to make sure it sees the new files.
 
 The wiki for the un modified JeeLib library is at <http://jeelabs.net/projects/cafe/wiki>.
-
-
-
 
 
 
